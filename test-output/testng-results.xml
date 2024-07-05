@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testng-results ignored="3" total="6" passed="3" failed="0" skipped="0">
+  <reporter-output>
+  </reporter-output>
+  <suite started-at="2024-07-03T19:29:10 IST" name="Default suite" finished-at="2024-07-03T19:29:16 IST" duration-ms="5767">
+    <groups>
+    </groups>
+    <test started-at="2024-07-03T19:29:10 IST" name="Default test" finished-at="2024-07-03T19:29:16 IST" duration-ms="5767">
+      <class name="APITestCase.ManageInventory">
+        <test-method is-config="true" signature="setup()[pri:0, instance:APITestCase.ManageInventory@4686afc2]" started-at="2024-07-03T19:29:10 IST" name="setup" finished-at="2024-07-03T19:29:11 IST" duration-ms="651" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- setup -->
+        <test-method signature="Login()[pri:0, instance:APITestCase.ManageInventory@4686afc2]" started-at="2024-07-03T19:29:11 IST" name="Login" finished-at="2024-07-03T19:29:15 IST" duration-ms="3736" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- Login -->
+        <test-method signature="GetProductDetails()[pri:0, instance:APITestCase.ManageInventory@4686afc2]" started-at="2024-07-03T19:29:15 IST" name="GetProductDetails" finished-at="2024-07-03T19:29:16 IST" depends-on-methods="APITestCase.ManageInventory.Login" duration-ms="917" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- GetProductDetails -->
+        <test-method signature="AddInventory()[pri:0, instance:APITestCase.ManageInventory@4686afc2]" started-at="2024-07-03T19:29:16 IST" name="AddInventory" finished-at="2024-07-03T19:29:16 IST" depends-on-methods="APITestCase.ManageInventory.GetProductDetails" duration-ms="394" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- AddInventory -->
+        <test-method is-config="true" signature="close()[pri:0, instance:APITestCase.ManageInventory@4686afc2]" started-at="2024-07-03T19:29:16 IST" name="close" finished-at="2024-07-03T19:29:16 IST" duration-ms="8" status="PASS">
+          <reporter-output>
+          </reporter-output>
+        </test-method> <!-- close -->
+      </class> <!-- APITestCase.ManageInventory -->
+    </test> <!-- Default test -->
+  </suite> <!-- Default suite -->
+</testng-results>
