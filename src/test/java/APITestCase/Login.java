@@ -3,7 +3,7 @@ package APITestCase;
 import org.hamcrest.core.Is;
 import com.github.javafaker.Faker;
 import com.relevantcodes.extentreports.LogStatus;
-import com.reports.ExtentTestNGITestListener;
+//import com.reports.ExtentTestNGITestListener;
 
 import org.json.JSONException;
 import org.json.simple.JSONObject;
@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.Random;
 import java.text.ParseException;
 
-public class Login extends ExtentTestNGITestListener
+public class Login 
 {
    String authToken;
    String otpToken;

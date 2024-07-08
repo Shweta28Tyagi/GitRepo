@@ -2,7 +2,6 @@ package APITestCase;
 
 import java.io.File;
 import java.io.IOException;
-
 import static org.hamcrest.Matchers.equalTo;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -20,22 +19,21 @@ public class Dashboard {
 	String[] toplimit= {"5","10","20","30","40","50"};
 	String[] filterData= {"This Week","Today","This Month","This Year"};
     
-	
 	@BeforeClass
-	   public void setup() {
-	       RestAssured.baseURI = "https://mytyles.website:3133/api/v1";
-	   }
-	 @AfterClass
-	 public void close()
-	 {
-		 Assert.assertEquals(response.getStatusCode(), 200);
-	 }
+	public void setup() {
+		RestAssured.baseURI = "https://mytyles.website:3133/api/v1";
+	}
+
+	@AfterClass
+	public void close() {
+		Assert.assertEquals(response.getStatusCode(), 200);
+	}
 	 
 	 	@Test
 	    public void Login() throws IOException
 	    {
 	        File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\PreLogin\\PasswordLogin.json");
-
+	    
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
 	                .body(file)
@@ -43,14 +41,14 @@ public class Dashboard {
 	                .post("/login")
 	                .andReturn();
 				    System.out.println("        ******** DASHBOARD ********");
-System.out.println("NEW LINE ADDED");
+				    
 	        String res = response.getBody().asString();
-	        this.authToken = JsonPath.from(res).get("data.token");
+	       this.authToken = JsonPath.from(res).get("data.token");
 	        response.then().assertThat().body("message", equalTo("Login successfully"));
 	    } 
 	 
 	 //GET DASHBOARD DATA
-	 @Test(dependsOnMethods = "Login")
+	 @Test(dependsOnMethods="Login")
 	    public void GetDashboardData() throws IOException {
 	        String file="{\r\n"
 	        		+ "    \"filter\":\""+filterData[3]+"\" \r\n"
@@ -63,7 +61,7 @@ System.out.println("NEW LINE ADDED");
 	                .when()
 	                .post("/getDashboardData")
 	                .andReturn();
-
+	         
 	        String res = response.getBody().asString();
 	        System.out.println("Response body of get dashboard data :"+res);
 	        response.then().assertThat().body("message", equalTo("Record found successfully"));
