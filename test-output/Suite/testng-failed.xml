@@ -8,9 +8,9 @@
     <classes>
       <class name="APITestCase.ManageQuotation">
         <methods>
+          <include name="AddShippingAddress"/>
           <include name="Login"/>
           <include name="close"/>
-          <include name="UpdateShippingAddress"/>
           <include name="setup"/>
         </methods>
       </class> <!-- APITestCase.ManageQuotation -->
