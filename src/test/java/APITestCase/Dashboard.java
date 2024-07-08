@@ -43,7 +43,7 @@ public class Dashboard {
 	                .post("/login")
 	                .andReturn();
 				    System.out.println("        ******** DASHBOARD ********");
-
+System.out.println("NEW LINE ADDED");
 	        String res = response.getBody().asString();
 	        this.authToken = JsonPath.from(res).get("data.token");
 	        response.then().assertThat().body("message", equalTo("Login successfully"));
