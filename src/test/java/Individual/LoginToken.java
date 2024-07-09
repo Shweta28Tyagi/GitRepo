@@ -47,7 +47,6 @@ public class LoginToken
        String res = response.getBody().asString();
        System.out.println("Response of Login with Password : "+res);
        authToken = JsonPath.from(res).get("data.token");
-       System.out.println(authToken);
    }
 }
 

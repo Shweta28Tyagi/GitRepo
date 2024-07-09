@@ -3,7 +3,7 @@ package APITestCase;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
-
+import Individual.LoginToken;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -27,7 +27,7 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
 public class ManageProfile {
-    private String authToken;
+    private String token;
     private String Doj;
     Response response;
     String number;
@@ -35,6 +35,8 @@ public class ManageProfile {
     @BeforeClass
     public void setup() {
         RestAssured.baseURI = "https://mytyles.website:3133/api/v1";
+        LoginToken.testLoginWithPassword();
+	    token = LoginToken.authToken;
     }
     @AfterClass
     public void close()
@@ -43,30 +45,12 @@ public class ManageProfile {
     }
 
     @Test
-    public void testLogin() throws IOException {
-        File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\PreLogin\\PasswordLogin.json");
-
-         response = given()
-                .contentType(ContentType.JSON)
-                .body(file)
-                .when()
-                .post("/login")
-                .then()
-                .body("message", equalTo("Login successfully"))
-                .extract().response();
-         
-         System.out.println("			******** MANAGE PROFILE ********");	
-        this.authToken = JsonPath.from(response.getBody().asString()).getString("data.token");
-        Assert.assertNotNull(authToken, "Auth token should not be null");
-    }
-
-    @Test(dependsOnMethods = "testLogin")
     public void testGetUserProfile() {
         String requestBody = "{ \"id\": 1 }";
    
          response = given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(requestBody)
                 .when()
                 .post("/getUserProfile")
@@ -81,13 +65,13 @@ public class ManageProfile {
         Assert.assertNotNull(Doj, "Date of Joining should not be null");
     }
 
-    @Test(dependsOnMethods = "testLogin")
+    @Test
     public void testUploadProfileImage() throws IOException {
         String filePath = "C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\ManageUsers\\tile1.jpg";
         File file = Paths.get(filePath).toFile();
 
          response = given()
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .multiPart("id", 1)
                 .multiPart("file", file, "image/jpeg")
                 .when()
@@ -100,13 +84,13 @@ public class ManageProfile {
         System.out.println("Response body of upload profile image: " + responseBody.toString(4));
     }
 
-    @Test(dependsOnMethods = "testLogin")
+    @Test
     public void testRemoveProfileImage() {
         String requestBody = "{ \"id\": 1 }";
 
          response = given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(requestBody)
                 .when()
                 .post("/RemoveProfileImage")
@@ -145,7 +129,7 @@ public class ManageProfile {
 
          response = given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(requestBody)
                 .when()
                 .post("/updateUserProfile")
@@ -156,7 +140,7 @@ public class ManageProfile {
         System.out.println("Response body of edit user profile: " + response.getBody().asString());
     }
 
-    @Test(dependsOnMethods = "testLogin")
+    @Test
     public void testChangePassword() {
         Faker faker = new Faker();
         String randomFirstName = faker.name().firstName();
@@ -179,7 +163,7 @@ public class ManageProfile {
 
          response = given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(requestBody)
                 .when()
                 .post("/updateUserProfile")

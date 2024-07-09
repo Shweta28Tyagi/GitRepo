@@ -2,7 +2,7 @@ package APITestCase;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-
+import Individual.LoginToken;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -19,13 +19,14 @@ import org.testng.annotations.Test;
 
 import com.github.javafaker.Faker;
 
+import Individual.LoginToken;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
 public class ManageInventory {
-    String authToken;
+    String token;
     int productId;
     Faker faker = new Faker();
     int randomCode = 10000000 + faker.number().numberBetween(0, 90000000); // Ensures the number is 6 digits
@@ -37,27 +38,13 @@ public class ManageInventory {
     @BeforeClass
     public void setup() {
         RestAssured.baseURI = "https://mytyles.website:3133/api/v1";
+        LoginToken.testLoginWithPassword();
+	     token = LoginToken.authToken;
     }
 
     @AfterClass
     public void close() {
         Assert.assertEquals(response.getStatusCode(), 200);
-    }
-
-    @Test
-    public void Login() throws IOException {
-        File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\PreLogin\\PasswordLogin.json");
-
-        response = given()
-                .contentType(ContentType.JSON)
-                .body(file)
-                .when()
-                .post("/login")
-                .andReturn();
-        System.out.println("				******** MANAGE INVENTORY ********");
-
-        String res = response.getBody().asString();
-        this.authToken = JsonPath.from(res).get("data.token");
     }
 
     @Test(dependsOnMethods = "GetProductDetails")
@@ -102,7 +89,7 @@ public class ManageInventory {
         
         response = given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/addProductInventory")
@@ -116,7 +103,7 @@ public class ManageInventory {
         this.productId = JsonPath.from(res).get("data.product_id");
     }
 
-    @Test(dependsOnMethods = "Login")
+    @Test
     public void GetProductDetails() throws IOException {
     	String[] date= {"brand", "country_of_manufacture", "uses", "category", "finish", "material", "quality", "delivery_time", "vendor_company_name", "product_size"};
         
@@ -126,7 +113,7 @@ public class ManageInventory {
 
         response = given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/getProductDetails")
@@ -172,7 +159,7 @@ public class ManageInventory {
 
         response = given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/getProductsInventory")
@@ -194,7 +181,7 @@ public class ManageInventory {
         byte[] fileContent1 = FileUtils.readFileToByteArray(file1);
 
         response = given()
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .basePath("/addUploadMultipleImage")
                 .multiPart("id", productId) // Replace with actual id
                 .multiPart("file", file, "image/jpeg")
@@ -208,7 +195,7 @@ public class ManageInventory {
         System.out.println("Response body of add product image: " + res);
     }
 
-    @Test(dependsOnMethods = "Login")
+    @Test
     public void UpdateProduct() throws IOException {    	
     	 Map<String, Object> file = new HashMap<>();
          file.put("id", "187");
@@ -242,7 +229,7 @@ public class ManageInventory {
 
         response = given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/updateProductsInventory")
@@ -259,7 +246,7 @@ public class ManageInventory {
         byte[] fileContent = FileUtils.readFileToByteArray(file);
 
         response = given()
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .basePath("/updateUploadMultipleImage")
                 .multiPart("id", productId) // Replace with actual id
                 .multiPart("file", file, "image/jpeg")

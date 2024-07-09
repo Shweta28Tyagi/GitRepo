@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-
+import Individual.LoginToken;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.PropertyConfigurator;
 import org.hamcrest.Matcher;
@@ -32,13 +32,10 @@ import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
-
 import com.github.javafaker.Faker;
 
-import APITestCase.Login;
-
 public class ManageUser {
-	String authToken;
+	String token;
 	private static final Faker faker=new Faker();
 	 String randomFirstName = faker.name().firstName();
 	 int userId;
@@ -53,30 +50,14 @@ public class ManageUser {
 	 @BeforeClass
 	   public void setup() {
 	       RestAssured.baseURI = "https://mytyles.website:3133/api/v1";
+	       LoginToken.testLoginWithPassword();
+	       token=LoginToken.authToken;
 	   }
 	 @AfterClass
      public void close()
      {
    	  Assert.assertEquals(response.getStatusCode(), 200);
      }
-
-    @Test
-    public void Login() throws IOException
-    {
-        File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\PreLogin\\PasswordLogin.json");
-
-         response = RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(file)
-                .when()
-                .post("/login")
-                .andReturn();
-        System.out.println("        ******** MANAGE USER ********");
-
-        String res = response.getBody().asString();
-        this.authToken = JsonPath.from(res).get("data.token");
-        response.then().assertThat().body("message", equalTo("Login successfully"));
-    } 
     
    // Generating random phone number
     private String generateRandomIndianPhoneNumber() {
@@ -93,7 +74,7 @@ public class ManageUser {
         return calendar.getTime();
     }
     
-    @Test(dependsOnMethods="Login")
+    @Test
    public void AddUser()  {
     	 String randomFirstName = faker.name().firstName();
          String randomLastName = faker.name().lastName();
@@ -122,7 +103,7 @@ public class ManageUser {
        
         response = RestAssured.given()
                .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+               .header("Authorization", "Bearer " + token) // Pass token in the header
                .body(payload)
                .when()
                .post("/createUser")
@@ -135,7 +116,6 @@ public class ManageUser {
 
        // Extract user_id from response
        this.userId = JsonPath.from(res1).get("data.user_id");
-       //System.out.println("After adding user id :" + userId);
    }
 
     	//UPDATE USER
@@ -161,7 +141,7 @@ public class ManageUser {
 
         response = RestAssured.given()
                .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+               .header("Authorization", "Bearer " + token) // Pass token in the header
                .body(payload)
                .when()
                .post("/updateUser")
@@ -173,7 +153,7 @@ public class ManageUser {
        System.out.println("Response body of Update User: " + exp);     
    }
    
-   @Test(dependsOnMethods = "Login")
+   @Test
    public void GetUser() throws IOException {
        //Sorting data
        String[] sort= {"userPhoneDesc", "userPhoneAsc","userRoleAsc","userRoleDesc", "userNameAsc","userNameDesc","createdDateAsc","createdDateDesc","userStatusAsc","userStatusDesc"};
@@ -192,7 +172,7 @@ public class ManageUser {
        
         response = RestAssured.given()
                .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+               .header("Authorization", "Bearer " + token) // Pass token in the header
                .body(file)
                .when()
                .post("/getUsers")
@@ -210,14 +190,14 @@ public class ManageUser {
 }
 
    //User count
-	@Test(dependsOnMethods = "Login")
+	@Test
     public void UsersCount() throws IOException
     {
         File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\ManageUsers\\getUser.json");
 
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+                .header("Authorization", "Bearer " + token) // Pass token in the header
                 .body(file)
                 .when()
                 .post("/getUsers")
@@ -258,7 +238,7 @@ public class ManageUser {
     }
    
     //EXPORT USERS
-    @Test(dependsOnMethods = "Login")
+    @Test
     public void ExportUser() throws IOException
     {
         String[] status= {"active","inactive","added"};
@@ -272,7 +252,7 @@ public class ManageUser {
 
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+                .header("Authorization", "Bearer " + token) // Pass token in the header
                 .body(file)
                 .when()
                 .post("/exportUsers")
@@ -285,14 +265,14 @@ public class ManageUser {
     }
     
     //ROLE LIST
-    @Test(dependsOnMethods = "Login")
+    @Test
     public void RoleList() throws IOException
     {
         File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\ManageUsers\\roleList.json");
 
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+                .header("Authorization", "Bearer " + token) // Pass token in the header
                 .body(file)
                 .when()
                 .post("/roleList")
@@ -317,14 +297,14 @@ public class ManageUser {
     }
     
     //RESET PASSWORD
-    @Test(dependsOnMethods = "Login")
+    @Test
     public void ResetPassword() throws IOException
     {
         String newPassword = generateUniquePassword();
        
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+                .header("Authorization", "Bearer " + token) // Pass token in the header
                 .body("{\r\n"
                         + "    \"phone_number\":\"9999999999\",\r\n"
                         + "    \"new_password\":\"" + newPassword + "\",\r\n"
@@ -341,7 +321,7 @@ public class ManageUser {
     }
     
     //RESEND PASSWORD
-    @Test(dependsOnMethods = "Login")
+    @Test
     public void ResendPassword() throws IOException
     {
         String file="{\r\n"
@@ -350,7 +330,7 @@ public class ManageUser {
         
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+                .header("Authorization", "Bearer " + token) // Pass token in the header
                 .body(file)
                 .when()
                 .post("/resendPassword")
@@ -363,7 +343,7 @@ public class ManageUser {
     }
     
     //UPDATE USER STATUS
-    @Test(dependsOnMethods = "Login")
+    @Test
     public void UpdateUserStatus() throws IOException
     {
         String[] statuses = {"active", "inactive", "deactivated"};        
@@ -376,7 +356,7 @@ public class ManageUser {
         
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+                .header("Authorization", "Bearer " + token) // Pass token in the header
                 .body(requestBody)
                 .when()
                 .post("/updateStatus")
@@ -399,12 +379,12 @@ public class ManageUser {
     }
     
     //GET BRANCH NAME
-    @Test(dependsOnMethods = "Login")
+    @Test
     public void GetBranches() throws IOException
     {
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken) 
+                .header("Authorization", "Bearer " + token) 
                 .when()
                 .post("/getBranchName")
                 .then()
@@ -421,12 +401,12 @@ public class ManageUser {
     }     
     
     //GET VENDOR COMPANY NAMES
-    @Test(dependsOnMethods = "Login")
+    @Test
     public void GetVendorCompany() throws IOException
     {     
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+                .header("Authorization", "Bearer " + token) // Pass token in the header
                 .when()
                 .post("/getVendorCompanyNames")
                 .then()

@@ -2,7 +2,7 @@ package APITestCase;
 
 import java.io.File;
 import java.io.IOException;
-
+import Individual.LoginToken;
 import static org.hamcrest.Matchers.equalTo;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -17,7 +17,7 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
 public class RolesAndPermissions {
-    String authToken;
+    String token;
     int roleId1;
     Faker faker = new Faker();
     String randomRoleName = faker.job().title();
@@ -26,44 +26,31 @@ public class RolesAndPermissions {
     @BeforeClass
     public void setup() {
         RestAssured.baseURI = "https://mytyles.website:3133/api/v1";
+        LoginToken.testLoginWithPassword();
+        token=LoginToken.authToken;
     }
 
     @AfterClass
     public void close() {
         Assert.assertEquals(response.getStatusCode(), 200);
     }
-     
-    @Test
-    public void login() throws IOException {
-        File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\PreLogin\\PasswordLogin.json");
-        response = RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(file)
-                .when()
-                .post("/login")
-                .andReturn();
-        System.out.println("				******** ROLES AND PERMISSIONS ********");
-
-        String res = response.getBody().asString();
-        this.authToken = JsonPath.from(res).get("data.token");
-        response.then().assertThat().body("message", equalTo("Login successfully"));
-    } 
     
-    @Test(dependsOnMethods = "login")
+    @Test
     public void getRoles() throws IOException {
         response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .when()
                 .get("/getRoles")
-                .andReturn();
+                .then()
+                .body("message", equalTo("Record found successfully"))
+                .extract().response();
 
         String res = response.getBody().asString();
         System.out.println("Response body of get roles: " + res);
-        response.then().assertThat().body("message", equalTo("Record found successfully"));
     }
     
-    @Test(dependsOnMethods = "login")
+    @Test
     public void createRole() throws IOException {
         String file = "{\r\n" +
                       "    \"roleName\": \"" + randomRoleName + "\"\r\n" +
@@ -71,7 +58,7 @@ public class RolesAndPermissions {
 
         response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/createRole")
@@ -80,8 +67,7 @@ public class RolesAndPermissions {
         String res = response.getBody().asString();
         System.out.println("Response body of create role: " + res);
         this.roleId1 = JsonPath.from(res).get("data.roleId");
-        System.out.println("Role Id: " + roleId1);
-        
+       
         int statusCode = response.getStatusCode();
         if (statusCode == 201) {
             response.then().assertThat().body("message", equalTo("Role created successfully"));
@@ -92,7 +78,7 @@ public class RolesAndPermissions {
         }
     }
     
-    @Test(dependsOnMethods = "login")
+    @Test
     public void editRoleName() throws IOException {
         String file = "{\r\n" +
                       "    \"roleId\": \"" + roleId1 + "\",\r\n" +
@@ -101,18 +87,19 @@ public class RolesAndPermissions {
 
         response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/editRoleName")
-                .andReturn();
+                .then()
+                .body("message", equalTo("Updated successfully"))
+                .extract().response();
     	
         String res = response.getBody().asString();
-        System.out.println("Response body of edit role name: " + res); 	
-        response.then().assertThat().body("message", equalTo("Updated successfully"));   	
+        System.out.println("Response body of edit role name: " + res); 	 	
     }
     
-    @Test(dependsOnMethods = "login")
+    @Test
     public void deleteRole() throws IOException {
         String file = "{\r\n" +
                       "    \"roleId\": 93,\r\n" +
@@ -121,7 +108,7 @@ public class RolesAndPermissions {
 
         response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/deleteRole")
@@ -149,18 +136,19 @@ public class RolesAndPermissions {
         
         response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/getRoleDetails")
-                .andReturn();
+                .then()
+                .body("message", equalTo("Record found successfully"))
+                .extract().response();
 
         String res = response.getBody().asString();
         System.out.println("Response body of get role details: " + res);
-        response.then().assertThat().body("message", equalTo("Record found successfully"));
     }
     
-    @Test(dependsOnMethods = "login")
+    @Test
     public void editRole() throws IOException {
         String file = "{\r\n" +
                       "    \"role_name\": \"Principal Marketing Specialist\",\r\n" +
@@ -181,19 +169,20 @@ public class RolesAndPermissions {
 
         response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/editRole")
-                .andReturn();
+                .then()
+                .body("message", equalTo("Updated successfully"))
+                .extract().response();
 
         String res = response.getBody().asString();
         System.out.println("Response body of edit role: " + res);
-        response.then().assertThat().body("message", equalTo("Updated successfully"));
     }
     
     //Role list
-    @Test(dependsOnMethods = "login")
+    @Test
     public void RoleList() throws IOException {
     	String[] roleType= {"system", "custom"};
  
@@ -205,15 +194,15 @@ public class RolesAndPermissions {
 
         response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/roleList")
-                .andReturn();
+                .then()
+                .body("message", equalTo("Record found successfully"))
+                .extract().response();
 
         String res = response.getBody().asString();
         System.out.println("Response body of role list: " + res);
-        response.then().assertThat().body("message", equalTo("Record found successfully"));
-    }
-    
+    }   
 }

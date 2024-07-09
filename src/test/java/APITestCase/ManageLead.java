@@ -2,7 +2,7 @@ package APITestCase;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-
+import Individual.LoginToken;
 import org.apache.commons.io.FileUtils;  //IMAGE UPLOAD
 import org.hamcrest.Matchers;
 
@@ -26,13 +26,14 @@ import org.testng.annotations.Test;
 
 import com.github.javafaker.Faker;
 
+import Individual.LoginToken;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
 public class ManageLead {
-	String authToken;
+	String token;
 	Faker faker=new Faker();
 	String randomName = faker.name().fullName();
     String randomPhoneNumber = generateRandomIndianPhoneNumber();
@@ -54,27 +55,12 @@ public class ManageLead {
     public void setup()
     {
     	RestAssured.baseURI = "https://mytyles.website:3133/api/v1";
+    	LoginToken.testLoginWithPassword();
+	    token = LoginToken.authToken;
     }
     @AfterClass
     public static void close() {
     	Assert.assertEquals(response.getStatusCode(), 200);
-    }
-    
-    @Test
-    public void Login() throws IOException
-    {
-        File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\PreLogin\\PasswordLogin.json");
-
-         response = RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(file)
-                .when()
-                .post("/login")
-                .andReturn();
-        System.out.println("        ******** MANAGE LEAD ********");
-
-        String res = response.getBody().asString();
-        this.authToken = JsonPath.from(res).get("data.token");
     }
       
     // Generating random phone number
@@ -84,7 +70,7 @@ public class ManageLead {
      }
      
      //Get lead owners list
-     @Test(dependsOnMethods = "Login")
+     @Test
      public void GetLeadOwner() throws IOException
      {
        	 Map<String, Object> data = new HashMap<>();
@@ -96,7 +82,7 @@ public class ManageLead {
      
           response = RestAssured.given()
                  .contentType(ContentType.JSON)
-                 .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+                 .header("Authorization", "Bearer " + token) // Pass token in the header
                  .body(data)
                  .when()
                  .post("/getUsers")
@@ -117,7 +103,7 @@ public class ManageLead {
      }
     
     //ADD LEAD
-    @Test(dependsOnMethods = "Login")
+    @Test
     public void AddLead() throws IOException
     {   
  	   String pinCode = generateSixDigitPincode();
@@ -144,7 +130,7 @@ public class ManageLead {
         
     	response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+                .header("Authorization", "Bearer " + token) // Pass token in the header
                 .body(data)
                 .when()
                 .post("/createLead")
@@ -156,29 +142,27 @@ public class ManageLead {
     }
          
     // GET LEADS
-   @Test(dependsOnMethods = "Login")
+   @Test
     public void GetLeads() throws IOException
     {
         File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\ManageLeads\\GetLeads.json");
 
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+                .header("Authorization", "Bearer " + token) // Pass token in the header
                 .body(file)
                 .when()
                 .post("/getLeads")
-                .andReturn();
+                .then()
+                .body("message",equalTo("Record found successfully."))
+                .extract().response();
         String exp = response.getBody().asString();
         System.out.println("Response body of get lead : " + exp);
-
-        int count = JsonPath.from(exp).get("data.count");
-        System.out.println("Total lead count : "+count);
-        
-        //Assert.assertEquals(response.body("message", equals("Record found successfully.")));        
+        int count = JsonPath.from(exp).get("data.count");      
     }
 	
    //UPDATE LEAD
-   @Test(dependsOnMethods = "Login")
+   @Test
    public void UpdateLead() throws IOException
    {
 	   String pinCode = generateSixDigitPincode();
@@ -208,7 +192,7 @@ public class ManageLead {
        
         response = RestAssured.given()
                .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+               .header("Authorization", "Bearer " + token) // Pass token in the header
                .body(data)
                .when()
                .post("/updateLead")
@@ -221,7 +205,7 @@ public class ManageLead {
    }
    
    //ADD ATTACHMENTS
-   @Test(dependsOnMethods = "Login")
+   @Test
    public void UploadLeadAttachment() throws IOException
    {
 	   String filePath = "C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\ManageUsers\\tile1.jpg";
@@ -234,7 +218,7 @@ public class ManageLead {
 
        // Construct the multipart form data request
         response = given()
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .basePath("/addUploadMultipleAttachments")
                .multiPart("id", 104) // Replace with actual id
                .multiPart("file", file, "image/jpeg")
@@ -249,14 +233,14 @@ public class ManageLead {
    }
    
    //EXPORT LEADS
-   @Test(dependsOnMethods = "Login")
+   @Test
    public void ExportLeads() throws IOException
    {
 	   File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\ManageLeads\\exportLead.json");
 	   
         response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(file)
                .when()
                .post("/exportLeads");
@@ -267,7 +251,7 @@ public class ManageLead {
    }
    
    //Add task
-   @Test(dependsOnMethods="Login")
+   @Test
    public void AddTaskForLead() throws IOException
    {
 	   Map<String, Object> payload = new HashMap<>();
@@ -280,7 +264,7 @@ public class ManageLead {
 	   
         response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(payload)
                .when()
                .post("/createLeadTask");
@@ -291,14 +275,14 @@ public class ManageLead {
    }
    
    //GET LEAD TASK
-   @Test(dependsOnMethods="Login")
+   @Test
    public void GetLeadTask() throws IOException
    {	  
 	   File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\ManageLeads\\getLeadTask.json");
 	   
         response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(file)
                .when()
                .post("/getLeadTask");
@@ -309,7 +293,7 @@ public class ManageLead {
    }
    
    //GET LEAD HISTORY
-   @Test(dependsOnMethods="Login")
+   @Test
    public void GetLeadHistory() throws IOException
    {
 	   Map<String, Object> payload = new HashMap<>();
@@ -317,7 +301,7 @@ public class ManageLead {
 	   
 	   response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(payload)
                .when()
                .post("/getLeadHistory");
@@ -328,7 +312,7 @@ public class ManageLead {
    }
    
    //ADD LEAD ACTIVITY
-   @Test(dependsOnMethods="Login")
+   @Test
    public void AddLeadActivity() throws IOException
    {
 	   Map<String, Object> payload = new HashMap<>();
@@ -338,7 +322,7 @@ public class ManageLead {
 
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(payload)
                .when()
                .post("/createLeadActivity");
@@ -349,12 +333,12 @@ public class ManageLead {
    }
    
    //GET ACTIVITY
-   @Test(dependsOnMethods="Login")
+   @Test
    public void GetLeadActivity() throws IOException
    {
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .when()
                .post("/getActivityType");
 
@@ -364,7 +348,7 @@ public class ManageLead {
    }
    
    //CITIES
-   @Test(dependsOnMethods="Login")
+   @Test
    public void GetCity() throws IOException
    {
 	   Map<String, Object> payload = new HashMap<>();
@@ -372,7 +356,7 @@ public class ManageLead {
 	 
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(payload)
                .when()
                .post("/getCities");
@@ -383,12 +367,12 @@ public class ManageLead {
    }
    
    //ALL STATES
-   @Test(dependsOnMethods="Login")
+   @Test
    public void GetStates() throws IOException
    {
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .when()
                .post("/getStates");
 
@@ -398,7 +382,7 @@ public class ManageLead {
    }
    
    //GET LEAD DETAILS
-   @Test(dependsOnMethods="Login")
+   @Test
    public void GetLeadDetails() throws IOException
    {
 	   Map<String, Object> payload = new HashMap<>();
@@ -406,7 +390,7 @@ public class ManageLead {
 	   
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(payload)
                .when()
                .post("/getLeadDetails");
@@ -417,7 +401,7 @@ public class ManageLead {
    }
    
    //CHECK LEAD NUMBERS
-   @Test(dependsOnMethods="Login")
+   @Test
    public void CheckLeadNumbers() throws IOException
    {
 	   Map<String, Object> payload = new HashMap<>();
@@ -426,7 +410,7 @@ public class ManageLead {
 	   
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(payload)
                .when()
                .post("/checkLeadNumbers");
@@ -444,12 +428,12 @@ public class ManageLead {
 	   
 	   Map<String, Object> payload = new HashMap<>();
        payload.put("id", leadId);
-       payload.put("lead_stage", stages[0]);
+       payload.put("lead_stage", stages[1]);
        payload.put("comment", "");
 	   
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(payload)
                .when()
                .post("/updateLeadStage");
@@ -460,12 +444,12 @@ public class ManageLead {
    }
     
    //GET LEAD STAGE  
-   @Test(dependsOnMethods="Login")
+   @Test
    public void GetLeadStage() throws IOException
    {
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .when()
                .post("/getLeadStage");
 
@@ -475,12 +459,12 @@ public class ManageLead {
    }
    
    //GET REQUIREMENTS
-   @Test(dependsOnMethods="Login")
+   @Test
    public void GetRequirement() throws IOException
    {
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .when()
                .post("/getRequirements");
 
@@ -490,7 +474,7 @@ public class ManageLead {
    }
    
    //MARK LEAD AS STAR
-   @Test(dependsOnMethods="Login")
+   @Test
    public void MarkLeadAsStar() throws IOException
    {
 	   String file="{\r\n"
@@ -500,7 +484,7 @@ public class ManageLead {
 	   
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(file)
                .when()
                .post("/markLeadAsStar");
@@ -511,7 +495,7 @@ public class ManageLead {
    }
    
    //GET LEAD TASK BY ID
-   @Test(dependsOnMethods="Login")
+   @Test
    public void GetTaskByLeadId() throws IOException
    {
 	   String file="{\r\n"
@@ -520,7 +504,7 @@ public class ManageLead {
 	   
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(file)
                .when()
                .post("/getLeadTaskByLeadId");
@@ -531,7 +515,7 @@ public class ManageLead {
    }
    
    //Mark Task as Completed
-   @Test(dependsOnMethods="Login")
+   @Test
    public void MarkTaskAsCompleted() throws IOException
    {
 	   String file="{\r\n"
@@ -541,7 +525,7 @@ public class ManageLead {
 	   
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(file)
                .when()
                .post("/markTaskAsCompleted");
@@ -552,7 +536,7 @@ public class ManageLead {
    }
    
    //RESCHEDULE TASK
-   @Test(dependsOnMethods="Login")
+   @Test
    public void RescheduleTask() throws IOException
    {
 	   Map<String, Object> payload = new HashMap<>();
@@ -565,7 +549,7 @@ public class ManageLead {
 	   
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(payload)
                .when()
                .post("/rescheduleTask");
@@ -576,7 +560,7 @@ public class ManageLead {
    }
    
    //DELETE LEAD ATTACHMENT
-   @Test(dependsOnMethods="Login")
+   @Test
    public void DeleteAttachment() throws IOException
    {
 	   String file="{\r\n"
@@ -585,7 +569,7 @@ public class ManageLead {
 	   
 	    response = given()
     		   .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(file)
                .when()
                .post("/deleteAttachments");

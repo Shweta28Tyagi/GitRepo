@@ -38,7 +38,7 @@ import java.text.ParseException;
 
 public class Login 
 {
-   String authToken;
+   String token;
    String otpToken;
    int userID;
    String userName;
@@ -84,9 +84,9 @@ public class Login
         
        String res = response.getBody().asString();
        System.out.println("Response of Login with Password : "+res);
-       this.authToken = JsonPath.from(res).get("data.token");
+       this.token = JsonPath.from(res).get("data.token");
     
-       String[] chunks = authToken.split("\\.");
+       String[] chunks = token.split("\\.");
        Base64.Decoder decoder = Base64.getUrlDecoder();
        String payload = new String(decoder.decode(chunks[1]));
        this.userID = JsonPath.from(payload).get("userId");
@@ -94,7 +94,7 @@ public class Login
        userName = JsonPath.from(payload).get("firstName");
        nameInCamelCase = userName.substring(0, 1).toUpperCase() + userName.substring(1);
 
-       Assert.assertNotNull(authToken, "Token should not be null");
+       Assert.assertNotNull(token, "Token should not be null");
        Assert.assertNotNull(userID, "User ID should not be null");
        Assert.assertNotNull(roleID, "Role ID should not be null");
    }
@@ -163,7 +163,7 @@ public class Login
 
         response = given()
                .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body("{\r\n"
                        + "    \"phone_number\":\"9999999999\",\r\n"
                        + "    \"new_password\":\"" + newPassword + "\",\r\n"
@@ -208,7 +208,7 @@ public class Login
 
         response = given()
                .contentType(ContentType.JSON)
-               .header("Authorization", "Bearer " + authToken)
+               .header("Authorization", "Bearer " + token)
                .body(userLoginProfile)
                .when()
                .post("/getUserProfile")
@@ -223,7 +223,7 @@ public class Login
    @Test
    public void testLogout() throws IOException {
        String payload = "{\r\n"
-               + "    \"users_device_token\":\"authToken\"\r\n"
+               + "    \"users_device_token\":\"token\"\r\n"
                + "}";
 
         response = given()

@@ -2,7 +2,7 @@ package APITestCase;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.equalTo;
-
+import Individual.LoginToken;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -10,24 +10,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.io.FileUtils;
 import org.json.simple.JSONArray;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javafaker.Faker;
-
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
 public class ManageQuotation {
-	String authToken;
+	String token;
 	Faker faker=new Faker();
 	String randomName = faker.name().fullName();
     String randomPhoneNumber = generateRandomIndianPhoneNumber();
@@ -48,39 +45,23 @@ public class ManageQuotation {
     public void setup()
     {
     	RestAssured.baseURI = "https://mytyles.website:3133/api/v1";
+    	LoginToken.testLoginWithPassword();
+	     token = LoginToken.authToken;
     }
     @AfterClass
     public static void close() {
     	Assert.assertEquals(response.getStatusCode(), 200);
     }
-    
-	@Test
-    public void Login() throws IOException
-    {
-        File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\PreLogin\\PasswordLogin.json");
-
-         response = RestAssured.given()
-                .contentType(ContentType.JSON)
-                .body(file)
-                .when()
-                .post("/login")
-                .andReturn();
-        System.out.println("        ******** MANAGE QUOTATION ********");
-
-        String res = response.getBody().asString();
-        this.authToken = JsonPath.from(res).get("data.token");
-        response.then().assertThat().body("message", equalTo("Login successfully"));
-    } 
 	
 	// Add quotation
-	@Test(dependsOnMethods="Login")
+	@Test
     public void AddQuotation() throws IOException
     {
         File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\ManageQuotation\\addQuote.json");
 
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/createQuotation")
@@ -91,7 +72,7 @@ public class ManageQuotation {
     } 
 	
 	//Get Quotations
-	@Test(dependsOnMethods="Login")
+	@Test
     public void GetQuotation() throws IOException
     {
         String file="{\r\n"
@@ -102,7 +83,7 @@ public class ManageQuotation {
         		+ "}";
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/getQuotations")
@@ -114,14 +95,14 @@ public class ManageQuotation {
     } 
 	
 	//Update Quotations
-	@Test(dependsOnMethods="Login")
+	@Test
     public void UpdateQuotation() throws IOException
     {
         File file=new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\ManageQuotation\\updateQuote.json");
         
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/updateQuotation")
@@ -133,7 +114,7 @@ public class ManageQuotation {
     } 
 	
 	//Export
-	@Test(dependsOnMethods="Login")
+	@Test
     public void ExportQuotation() throws IOException
     {
         String file ="{\r\n"
@@ -141,7 +122,7 @@ public class ManageQuotation {
         		+ "}";
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/exportQuotations")
@@ -153,7 +134,7 @@ public class ManageQuotation {
     } 
 	
 	//Delete Quotation
-	@Test(dependsOnMethods="Login")
+	@Test
     public void DeleteQuotation() throws IOException
     {
         String file ="{\r\n"
@@ -161,7 +142,7 @@ public class ManageQuotation {
         		+ "}";
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/deleteQuotation")
@@ -180,7 +161,7 @@ public class ManageQuotation {
     } 
 	
 	//Quotation Detail
-	@Test(dependsOnMethods="Login")
+	@Test
     public void QuotationDetail() throws IOException
     {
         String file ="{\r\n"
@@ -190,7 +171,7 @@ public class ManageQuotation {
         		+ "	}";
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/getQuotations")
@@ -202,7 +183,7 @@ public class ManageQuotation {
     } 
 	
 	//Download quotation
-	@Test(dependsOnMethods="Login")
+	@Test
     public void DownloadQuotation() throws IOException
     {
         String file ="{\r\n"
@@ -210,7 +191,7 @@ public class ManageQuotation {
         		+ "}";
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/downloadQuote")
@@ -222,7 +203,7 @@ public class ManageQuotation {
     } 
 	
 	//Convert to Order
-	@Test(dependsOnMethods="Login")
+	@Test
     public void ConvertToOrder() throws IOException
     {
         String filePath = "C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\ManageQuotation\\Image.png";
@@ -234,7 +215,7 @@ public class ManageQuotation {
         byte[] fileContent1 = FileUtils.readFileToByteArray(file1);
         
          response = given()
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .basePath("/orderDispatched")
                 .multiPart("id", 57) 
                 .multiPart("comment", "New comment") 
@@ -266,7 +247,7 @@ public class ManageQuotation {
     }
    
    //ADD LEAD
-    @Test(dependsOnMethods = "Login")
+    @Test
     public void AddLead() throws IOException
     {   
  	   String pinCode = generateSixDigitPincode();
@@ -296,7 +277,7 @@ public class ManageQuotation {
         
     	response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken) // Pass authToken in the header
+                .header("Authorization", "Bearer " + token) // Pass token in the header
                 .body(data)
                 .when()
                 .post("/createLead")
@@ -312,7 +293,7 @@ public class ManageQuotation {
     {
         RestAssured.baseURI = "https://mytyles.website:3133/api/v1";
         Response getResponse = given()
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .when()
                 .get("/getBillingAddress/" + leadId)
                 .andReturn();
@@ -331,7 +312,7 @@ public class ManageQuotation {
             
             Response postResponse = given()
                     .contentType(ContentType.JSON)
-                    .header("Authorization", "Bearer " + authToken)
+                    .header("Authorization", "Bearer " + token)
                     .body(addressPayload)
                     .when()
                     .post("/addBillingAddress")
@@ -347,7 +328,7 @@ public class ManageQuotation {
     }
     
 	//Update billing address
-	@Test(dependsOnMethods="Login")
+	@Test
     public void UpdateBillingAddress() throws IOException
     {
 		String pinCode = generateSixDigitPincode();
@@ -363,7 +344,7 @@ public class ManageQuotation {
         
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(data)
                 .when()
                 .post("/updateBillingAddress")
@@ -375,7 +356,7 @@ public class ManageQuotation {
     } 
 	
 	//Add Shipping Address
-	@Test(dependsOnMethods="Login")
+	@Test
     public void AddShippingAddress() throws IOException
     {
 		String pinCode = generateSixDigitPincode();
@@ -402,7 +383,7 @@ public class ManageQuotation {
         
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(payload)
                 .when()
                 .post("/addMultipleShippingAddresses")
@@ -414,7 +395,7 @@ public class ManageQuotation {
     }
 	
 	//Update Shipping address
-	@Test(dependsOnMethods="Login")
+	@Test
     public void UpdateShippingAddress() throws IOException
     {
 		String pinCode = generateSixDigitPincode();
@@ -442,7 +423,7 @@ public class ManageQuotation {
 	        // Send the POST request and get the response
 	        Response response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(payload)
 	                .when()
 	                .post("/addMultipleShippingAddresses")
@@ -455,7 +436,7 @@ public class ManageQuotation {
     }   
 	
 	//RECHECK STOCK
-	//@Test(dependsOnMethods="Login")
+	//@Test
     public void RecheckStock() throws IOException
     {
         String file ="{\r\n"
@@ -467,7 +448,7 @@ public class ManageQuotation {
         
          response = RestAssured.given()
                 .contentType(ContentType.JSON)
-                .header("Authorization", "Bearer " + authToken)
+                .header("Authorization", "Bearer " + token)
                 .body(file)
                 .when()
                 .post("/reStockCheck")

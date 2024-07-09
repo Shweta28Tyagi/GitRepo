@@ -3,13 +3,14 @@
 <suite name="Failed suite [Default suite]" guice-stage="DEVELOPMENT">
   <test thread-count="5" name="Default test(failed)">
     <classes>
-      <class name="APITestCase.ManageInquiry">
+      <class name="APITestCase.ManageUser">
         <methods>
-          <include name="GetVendorInquiry"/>
           <include name="setup"/>
+          <include name="UpdateUser"/>
+          <include name="AddUser"/>
           <include name="close"/>
         </methods>
-      </class> <!-- APITestCase.ManageInquiry -->
+      </class> <!-- APITestCase.ManageUser -->
     </classes>
   </test> <!-- Default test(failed) -->
 </suite> <!-- Failed suite [Default suite] -->

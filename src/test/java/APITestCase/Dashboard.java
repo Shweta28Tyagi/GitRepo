@@ -7,14 +7,16 @@ import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import Individual.LoginToken;
 
+import Individual.LoginToken;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 
 public class Dashboard {
-	String authToken;
+	String token;
 	Response response;
 	String[] toplimit= {"5","10","20","30","40","50"};
 	String[] filterData= {"This Week","Today","This Month","This Year"};
@@ -22,6 +24,8 @@ public class Dashboard {
 	@BeforeClass
 	public void setup() {
 		RestAssured.baseURI = "https://mytyles.website:3133/api/v1";
+		 LoginToken.testLoginWithPassword();
+	     token = LoginToken.authToken;
 	}
 
 	@AfterClass
@@ -29,26 +33,8 @@ public class Dashboard {
 		Assert.assertEquals(response.getStatusCode(), 200);
 	}
 	 
-	 	@Test
-	    public void Login() throws IOException
-	    {
-	        File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\PreLogin\\PasswordLogin.json");
-	    
-	         response = RestAssured.given()
-	                .contentType(ContentType.JSON)
-	                .body(file)
-	                .when()
-	                .post("/login")
-	                .andReturn();
-				    System.out.println("        ******** DASHBOARD ********");
-				    
-	        String res = response.getBody().asString();
-	       this.authToken = JsonPath.from(res).get("data.token");
-	        response.then().assertThat().body("message", equalTo("Login successfully"));
-	    } 
-	 
 	 //GET DASHBOARD DATA
-	 @Test(dependsOnMethods="Login")
+	 @Test
 	    public void GetDashboardData() throws IOException {
 	        String file="{\r\n"
 	        		+ "    \"filter\":\""+filterData[3]+"\" \r\n"
@@ -56,7 +42,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/getDashboardData")
@@ -68,7 +54,7 @@ public class Dashboard {
 	    }
 	 
 	 //Get Quotation Analytics
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void GetQuotationAnalytics() throws IOException {
 		 String[] sort= {"salesExecutiveDesc", "salesExecutiveAsc", "convertedQuoteDesc", "convertedQuoteAsc", "totalDesc", "totalAsc", "quoteNumberDesc", "quoteNumberAsc", "salesExecutiveNcDesc", "salesExecutiveNcAsc", "customerNameNcDesc", "customerNameNcAsc", "amountNcDesc", "amountNcAsc"};
 		 String file="{\r\n"
@@ -81,7 +67,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/getQuotationAnalytics")
@@ -93,7 +79,7 @@ public class Dashboard {
 	    }
 	 
 	 //Export Quotation Analytics
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void ExportQuotationAnalytics() throws IOException {
 	        String file="{\r\n"
 	        		+ "    \"year\": 2024,\r\n"
@@ -102,7 +88,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/exportQuotationAnalytics")
@@ -114,7 +100,7 @@ public class Dashboard {
 	    }
 	 
 	 //Export quotation sales executive 
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void ExportSalesExecutiveQuotationAnalytics() throws IOException {
 	        String file="{\r\n"
 	        		+ "    \"year\": 2024,\r\n"
@@ -124,7 +110,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/exportSalesExecutiveAnalytics")
@@ -136,7 +122,7 @@ public class Dashboard {
 	    }
 	 
 	 //Export not yet converted quotes QUOTATION
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void ExportNotYetConvertedQuotation() throws IOException {
 	        String file="{\r\n"
 	        		+ "    \"year\": 2024,\r\n"
@@ -146,7 +132,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/exportNotConvertedSalesExecutiveAnalytics")
@@ -158,7 +144,7 @@ public class Dashboard {
 	    }
 	 
 	 //Lead Analytics Report
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void GetLeadAnalaytics() throws IOException {
 	        String file="{\r\n"
 	        		+ "    \"year\": 2024\r\n"
@@ -166,7 +152,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/getLeadAnalytics")
@@ -178,7 +164,7 @@ public class Dashboard {
 	    }
 	 
 	 //Get overdue task  lead analytics
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void GetOverDueTask() throws IOException {
 		 String[] sortValues= {"salesExecutiveDesc", "salesExecutiveAsc", "taskDesc", "taskAsc", "overDueTaskDesc", "overDueTaskAsc"};
 		 
@@ -189,7 +175,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/getOverDueTask")
@@ -201,7 +187,7 @@ public class Dashboard {
 	    }
 	 
 	 //Lead Conversion
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void LeadConversionReport() throws IOException {
 	        String file="{\r\n"
 	        		+ "    \"month\": 6\r\n"
@@ -209,7 +195,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/leadConversation")
@@ -221,7 +207,7 @@ public class Dashboard {
 	    }
 	 
 	 //Export lead generation by sources
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void ExportLeadGenerationSources() throws IOException {
 	        String file="{\r\n"
 	        		+ "    \"year\": 2024\r\n"
@@ -229,7 +215,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/exportLeadGenerationBySources")
@@ -241,7 +227,7 @@ public class Dashboard {
 	    }
 	 
 	 //Export Lead overdue tasks
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void ExportLeadOverDueTask() throws IOException {
 		 String[] sortValue= {"salesExecutiveDesc", "salesExecutiveAsc", "taskDesc", "taskAsc", "overDueTaskDesc", "overDueTaskAsc"};
 		 
@@ -252,7 +238,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/exportOverdueTasks")
@@ -264,7 +250,7 @@ public class Dashboard {
 	    }
 	 
 	 //Export lead conversion report
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void ExportLeadConversionReport() throws IOException {
 	        String file="{\r\n"
 	        		+ "    \"year\": 2024,\r\n"
@@ -273,7 +259,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/exportLeadConversionReport")
@@ -285,7 +271,7 @@ public class Dashboard {
 	    }
 	
 	 //Stock Check Analytics
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void StockCheckAnalytics() throws IOException {
 		 String[] sortValue= {"vendorDesc", "vendorAsc", "avgQuickDesc", "avgQuickAsc", "avgTimeDesc", "avgTimeAsc", "strikeRateDesc", "strikeRateAsc", "vendorNamesPrDesc", "vendorNamesSrDesc", "vendorNamesPrAsc", "vendorNamesSrAsc"};
 		 
@@ -299,7 +285,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/stockCheckAnalytics")
@@ -311,7 +297,7 @@ public class Dashboard {
 	    }
 	 
 	 //Export get Vendor quick response
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void ExportVendorQuickResponse() throws IOException {
 		 String[] sortValue= {"vendorDesc", "vendorAsc", "avgQuickDesc", "avgQuickAsc"};
 		 
@@ -323,7 +309,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/exportVendorQuickResponses")
@@ -335,7 +321,7 @@ public class Dashboard {
 	    }
 	 
 	 //Export vendor poor response
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void ExportVendorPoorResponse() throws IOException {
 		 String[] sortValue= {"vendorNamesPrDesc", "vendorNamesPrAsc", "avgTimeDesc", "avgTimeAsc"};
 	     
@@ -347,7 +333,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/exportVendorPoorResponses")
@@ -359,7 +345,7 @@ public class Dashboard {
 	    }
 	 
 	 //Export vendor strike rate
-	 @Test(dependsOnMethods = "Login")
+	 @Test
 	    public void ExportVendorStrikeRate() throws IOException {
 		 String[] sortValue= {"vendorNameSrDesc", "vendorNameSrAsc", "strikeRateDesc", "strikeRateAsc"};
 	        String file="{\r\n"
@@ -370,7 +356,7 @@ public class Dashboard {
 	        
 	         response = RestAssured.given()
 	                .contentType(ContentType.JSON)
-	                .header("Authorization", "Bearer " + authToken)
+	                .header("Authorization", "Bearer " + token)
 	                .body(file)
 	                .when()
 	                .post("/exportVendorStrikeRate")
