@@ -3,8 +3,7 @@ package APITestCase;
 import org.hamcrest.core.Is;
 import com.github.javafaker.Faker;
 import com.relevantcodes.extentreports.LogStatus;
-//import com.reports.ExtentTestNGITestListener;
-
+import Individual.LoginPayloadProvider;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.testng.Assert;
@@ -69,29 +68,29 @@ public class Login
    // Test case for login with password
    @Test
    public void testLoginWithPassword() throws IOException {
-       File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\PreLogin\\PasswordLogin.json");
-	  
-        response = given()
+       String payload = LoginPayloadProvider.getPasswordLoginPayload();
+
+       response = given()
                .contentType(ContentType.JSON)
-               .body(file)
+               .body(payload)
                .when()
                .post("/login")
                .then()
                .body("message", equalTo("Login successfully"))
                .extract().response();
 
-        System.out.println("        ******** PRE LOGIN ********");
-        
+       System.out.println("        ******** PRE LOGIN ********");
+
        String res = response.getBody().asString();
-       System.out.println("Response of Login with Password : "+res);
+       System.out.println("Response of Login with Password: " + res);
        this.token = JsonPath.from(res).get("data.token");
-    
+
        String[] chunks = token.split("\\.");
        Base64.Decoder decoder = Base64.getUrlDecoder();
-       String payload = new String(decoder.decode(chunks[1]));
-       this.userID = JsonPath.from(payload).get("userId");
-       int roleID = JsonPath.from(payload).get("roleId");
-       userName = JsonPath.from(payload).get("firstName");
+       String payloadDecoded = new String(decoder.decode(chunks[1]));
+       this.userID = JsonPath.from(payloadDecoded).get("userId");
+       int roleID = JsonPath.from(payloadDecoded).get("roleId");
+       userName = JsonPath.from(payloadDecoded).get("firstName");
        nameInCamelCase = userName.substring(0, 1).toUpperCase() + userName.substring(1);
 
        Assert.assertNotNull(token, "Token should not be null");
@@ -102,11 +101,11 @@ public class Login
    // Test case for login with OTP
    @Test(priority = 1)
    public void testLoginWithOtp() throws IOException {
-       File file = new File("C:\\Users\\Admin\\eclipse-workspace\\REST ASSURED GOAL\\src\\main\\java\\PreLogin\\OtpLogin.json");
+       String payload=LoginPayloadProvider.getOtpPayload();
 
         response = given()
                .contentType(ContentType.JSON)
-               .body(file)
+               .body(payload)
                .when()
                .post("/login")
                .then()
