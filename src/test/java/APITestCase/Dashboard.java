@@ -48,6 +48,8 @@ public class Dashboard {
 	                .post("/getDashboardData")
 	                .andReturn();
 	         
+	         System.out.println("		******** DASHBOARD ********");	
+	         
 	        String res = response.getBody().asString();
 	        System.out.println("Response body of get dashboard data :"+res);
 	        response.then().assertThat().body("message", equalTo("Record found successfully"));
